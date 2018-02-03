@@ -1,0 +1,145 @@
+import ch.so.agi.gretl.tasks.*
+import ch.so.agi.gretl.api.*
+
+apply plugin: 'ch.so.agi.gretl'
+
+def sourceDbUrl = "jdbc:postgresql://geodb.verw.rootso.org/sogis"
+def sourceDbUser = "mspublic"
+def sourceDbPass = "mspublic"
+
+def targetDbUrl = "jdbc:postgresql://192.168.50.5/sogis"
+def targetDbUser = "ddluser"
+def targetDbPass = "ddluser"
+//def targetDbUrl = "jdbc:postgresql://geodb-dev.cgjofbdf5rqg.eu-central-1.rds.amazonaws.com/xanadu2"
+//def targetDbUser = "stefan"
+//def targetDbPass = System.env.targetDbPass
+
+def dbSchema = "av_fixpunktkonzept_2017_work"
+
+task dropFixpunkteSchema(type: SqlExecutor) {
+    description = "Löscht das Fixpunktekonzept-Schema in der Datenbank."
+    database = [targetDbUrl, targetDbUser, targetDbPass]    
+    sqlParameters = [dbschema: dbSchema]    
+    sqlFiles = ["sql/deleteFixpunktekonzeptSchema.sql"]
+}
+
+task createSchemaFixpunktkonzept(type: Ili2pgImportSchema) {
+    description = "Erstellt das Fixpunktekonzept-Schema in der Datenbank mit den leeren Tabelle (gemäss INTERLIS-Modell)."
+    database = [targetDbUrl, targetDbUser, targetDbPass]
+    models = "SO_AV_Fixpunktkonzept_2017_20180203"
+    modeldir = "http://models.geo.admin.ch;../ili/" 
+    dbschema = dbSchema
+    nameByTopic = true
+    createFk = true
+    createFkIdx = true
+    createGeomIdx = true
+    createUnique = true
+    createNumChecks = true
+    createEnumTabs = true
+    strokeArcs = true
+    coalesceMultiSurface = true
+    defaultSrsCode = 2056
+}
+
+task copyGrundlagedaten(type: Db2Db) {
+    description = "Kopiert Grundlagedaten aus der produktiven Datenbank in die Berechnungsdatenbank / das Berechnungsschema."
+    sourceDb =  [sourceDbUrl, sourceDbUser, sourceDbPass]
+    targetDb = [targetDbUrl, targetDbUser, targetDbPass]
+    transferSets = [
+            new TransferSet("sql/copyBebautesGebiet.sql", dbSchema + ".grundlagen_bebautes_gebiet", true),
+            new TransferSet("sql/copyGemeindegrenzen.sql", dbSchema + ".grundlagen_gemeindegrenzen", true),
+            new TransferSet("sql/copyGrundstuecke.sql", dbSchema + ".grundlagen_grundstuecke", true),
+            new TransferSet("sql/copyLagefixpunkte.sql", dbSchema + ".grundlagen_lagefixpunkt", true),
+            new TransferSet("sql/copyHoehenfixpunkte.sql", dbSchema + ".grundlagen_hoehenfixpunkt", true)
+    ]
+}
+
+
+task importFPDSShapefile(type: ShpImport) {
+    description = """ Import die Daten aus dem FPDS-Shapefile von Swisstopo in die Berechnungsdatenbank / das Berechnungsschema.
+    Aus dem Shapefile wurde vorgängig einige Attribute gelöscht. """
+    database = [targetDbUrl, targetDbUser, targetDbPass]
+	schemaName = dbSchema
+    tableName = "grundlagen_fpds"
+    dataFile = "../data/FPDS_SO_LV95/FPDS_SO_LV95.shp"
+}
+
+
+task createSchemaSpannungsarmeGebiete(type: Ili2pgImportSchema) {
+    description = "Erstellt das Schema für die spannungsarmen Gebiete in der Berechnungsdatenbank." 
+    database = [targetDbUrl, targetDbUser, targetDbPass]
+    models = "LowDistortionAreas_LV95"
+    dbschema = "av_low_distortion_areas"
+    nameByTopic = true
+    createFk = true
+    createFkIdx = true
+    createGeomIdx = true
+    createUnique = true
+    createNumChecks = true
+    createEnumTabs = true
+    strokeArcs = true
+    coalesceMultiSurface = true
+    defaultSrsCode = 2056
+}
+
+task importDataSpannungsarmeGebiete(type: Ili2pgImport) {
+    description = """Import die spannungsarmen Gebiete aus einem XTF in die Berechnungsdatenbank. 
+    Das Inverse sind die spannungsbehafteten Gebiete. Muss in QGIS manuell digitalisiert werden."""
+    database = [targetDbUrl, targetDbUser, targetDbPass]
+    models = "LowDistortionAreas_LV95"
+    dbschema = "av_low_distortion_areas"
+    dataFile = "../data/LowDistortionAreas_LV95_SO_20161114.xtf"    
+}
+
+
+task createNewProject(type: Ili2pgImportSchema) {
+    description = "Erstellt ein neues OevKov-Projekt in der Datenbank mit sämtlichen benötigen leeren Tabellen."
+    database = [targetDbUrl, targetDbUser, targetDbPass]
+    models = "SO_AVT_OekKov_20180126"
+    modeldir = "http://models.geo.admin.ch;../ili/" 
+    dbschema = "avt_oevkov_test_1"
+    nameByTopic = true
+    createFk = true
+    createFkIdx = true
+    createUnique = true
+    createNumChecks = true
+    createEnumTabs = true
+    logFile = "ili2pg.log"
+}
+
+task GTFS_CreateStagingTables(type: SqlExecutor) {
+    description = "Temporär: Erstellt leere Staging-Tabellen für GTFS-Import."
+    database = [targetDbUrl, targetDbUser, targetDbPass]
+    sqlFiles = ["sql/gtfs-create-staging.sql"]
+    sqlParameters = [schema_name: dbSchema]
+
+}
+
+task GTFS_DeleteStagingTables(type: SqlExecutor) {
+    description = "Löscht den Inhalt sämtlicher GTFS-Staging-Tabellen."
+    database = [targetDbUrl, targetDbUser, targetDbPass]
+    sqlFiles = ["sql/gtfs-delete-staging.sql"]
+    sqlParameters = [schema_name: dbSchema]
+}
+
+task GTFS_ImportStops(type: CsvImport) {
+    description = "Importiert die GTFS-stops.txt-Datei."
+    database = [targetDbUrl, targetDbUser, targetDbPass]
+    dataFile = "/Users/stefan/Downloads/gtfsfp20172017-07-18/stops.txt"
+    //dataFile = "stops.txt"
+    schemaName = dbSchema
+	tableName = "gtfs_staging_stop"
+	firstLineIsHeader=true
+    encoding="UTF-8"
+}
+
+task GTFS_ImportStopTimes(type: CsvImport) {
+    description = "Importiert die GTFS-stop_times.txt-Datei."
+    database = [targetDbUrl, targetDbUser, targetDbPass]
+    dataFile = "/Users/stefan/Downloads/gtfsfp20172017-07-18/stop_times.txt"
+    schemaName = dbSchema
+	tableName = "gtfs_staging_stop_time"
+	firstLineIsHeader=true
+    encoding="UTF-8"
+}
+
