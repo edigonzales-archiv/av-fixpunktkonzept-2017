@@ -1,0 +1,44 @@
+import ch.so.agi.gretl.tasks.*
+import ch.so.agi.gretl.api.*
+
+task copy_Grundlagedaten(type: Db2Db) {
+    description = "Kopiert Grundlagedaten aus der produktiven Datenbank in die Berechnungsdatenbank / das Berechnungsschema."
+    sourceDb =  [sourceDbUrl, sourceDbUser, sourceDbPass]
+    targetDb = [targetDbUrl, targetDbUser, targetDbPass]
+    transferSets = [
+            new TransferSet("sql/copyToleranzstufen.sql", dbSchema + ".grundlagen_toleranzstufen", true),
+            new TransferSet("sql/copyGemeindegrenzen.sql", dbSchema + ".grundlagen_gemeindegrenzen", true),
+            new TransferSet("sql/copyGrundstuecke.sql", dbSchema + ".grundlagen_grundstuecke", true),
+            new TransferSet("sql/copyLagefixpunkte.sql", dbSchema + ".grundlagen_lagefixpunkt", true),
+            new TransferSet("sql/copyHoehenfixpunkte.sql", dbSchema + ".grundlagen_hoehenfixpunkt", true),
+            new TransferSet("sql/copyNFGeometer.sql", dbSchema + ".grundlagen_geometer", true)
+    ]
+}
+
+task importShapefile_FPDS(type: ShpImport) {
+    description = """Importiert die Daten aus dem FPDS-Shapefile von Swisstopo in die Berechnungsdatenbank / das Berechnungsschema.
+    Aus dem Shapefile wurden vorgängig einige Attribute gelöscht."""
+    database = [targetDbUrl, targetDbUser, targetDbPass]
+	schemaName = dbSchema
+    tableName = "grundlagen_fpds"
+    dataFile = "../../data/FPDS_SO_LV95/FPDS_SO_LV95.shp"
+}
+
+task importShapefile_Dreiecksvermaschung(type: ShpImport) {
+    description = """Importiert die Dreiecksvermaschung in die Berechnungsdatenbank / das Berechnungsschema.
+    Aus dem Shapefile wurden vorgängig einige Attribute gelöscht."""
+    database = [targetDbUrl, targetDbUser, targetDbPass]
+	schemaName = dbSchema
+    tableName = "grundlagen_dreiecksvermaschung"
+    dataFile = "../../data/Dreiecksvermaschung/chenyx06.shp"
+}
+
+task importShapefile_SpannungsarmeGebiete(type: ShpImport) {
+    description = """Importiert die spannungsarmen Gebiete in die Berechnungsdatenbank. 
+    Die Daten wurden vorgängig in QGIS grob digitalisiert oder berechnet und als 
+    Shapefile abgespeichert."""
+    database = [targetDbUrl, targetDbUser, targetDbPass]
+    schemaName = dbSchema    
+    tableName = "grundlagen_spannungsbehaftetes_gebiet"
+    dataFile = "../../data/Spannungsbehaftete_Gebiete/spannungsbehaftete_gebiete.shp"
+}

@@ -35,21 +35,36 @@ VERSION "2018-01-26"  =
       BFS_Nr : MANDATORY CHAdminCodes_V1.CHMunicipalityCode;
     END HFP3_unterhalten;
 
-    /** Zu löschende Hochzielpunkte (ohne Pyramiden).
+    /** Zu löschende Hochzielpunkte. Im FPDS sind sie als "nicht_begehbar" attribuiert. Ausgenommen sind die beiden Pyramiden und allfällige TSP.
      */
     CLASS Hochzielpunkte =
-      Nummer : MANDATORY TEXT*20;
+      Nummer : MANDATORY TEXT*50;
       BFS_Nr : MANDATORY CHAdminCodes_V1.CHCantonCode;
-      Lage : MANDATORY GeometryCHLV95_V1.Coord2;
+      Geometrie : MANDATORY GeometryCHLV95_V1.Coord2;
+      Signatur : TEXT*255;
+      Ordnung : TEXT*255;
+      Fineltra : TEXT*255;
+      zust_haupt : TEXT*255;
+      zustaendig : TEXT*255;
+      NFGeometer : TEXT*255;
     END Hochzielpunkte;
 
     /** LFP3, die auf Grenzpunkten liegen und zu löschen sind.
      */
     CLASS LFP3_auf_GP =
       Nummer : TEXT*20;
-      BFS_Nr : MANDATORY GeometryCHLV95_V1.Coord2;
-      Lage : MANDATORY GeometryCHLV95_V1.Coord2;
+      BFS_Nr : MANDATORY CHAdminCodes_V1.CHMunicipalityCode;
+      Geometrie : MANDATORY GeometryCHLV95_V1.Coord2;
+      NFGeometer : TEXT*255;
     END LFP3_auf_GP;
+
+    /** TSP, die keine LFP2 resp. LFP1 oder LV95-Punkte sind.
+     */
+    CLASS TSP_ungleich_LFP2 =
+      Name : MANDATORY TEXT*20;
+      Geometrie : MANDATORY GeometryCHLV95_V1.Coord2;
+      Herkunft : TEXT*255;
+    END TSP_ungleich_LFP2;
 
   END Berechnungen;
 
@@ -57,14 +72,15 @@ VERSION "2018-01-26"  =
    */
   TOPIC Grundlagen =
 
-    /** Richtplan: Typ 1 und 2 (Siedlung und Industrie).
+    /** Herkunft: SQLite-Datenbank von blog.sogeo.services. Wurde von uns für den Bezugsrahmenwechsel verwendet. Swisstopo bietet nur LV03-Dreiecksvermaschung an.
      */
-    CLASS Bebautes_Gebiet =
-      Typ : MANDATORY 0 .. 6;
-      Geometrie : MANDATORY GeometryCHLV95_V1.MultiSurface;
-    END Bebautes_Gebiet;
+    CLASS Dreiecksvermaschung =
+      Nummer : MANDATORY TEXT*20;
+      Geometrie : MANDATORY GeometryCHLV95_V1.SurfaceWithOverlaps2mm;
+      TSP : TEXT*255;
+    END Dreiecksvermaschung;
 
-    /** Daten aus Fixpunktdatenservice. Interessiert v.a. an den Attributen (Hochzielpunkt, TSP).
+    /** Daten aus Fixpunktdatenservice geliefert von Michael Burkard (swisstopo). Interessiert v.a. an den Attributen (Hochzielpunkt, TSP).
      */
     CLASS FPDS =
       Verwendung : TEXT*20;
@@ -91,6 +107,13 @@ VERSION "2018-01-26"  =
       BFS_Nr : MANDATORY CHAdminCodes_V1.CHMunicipalityCode;
       Geometrie : MANDATORY GeometryCHLV95_V1.MultiSurface;
     END Gemeindegrenzen;
+
+    /** Nachführungsgeometer
+     */
+    CLASS Geometer =
+      BFS_Nr : MANDATORY CHAdminCodes_V1.CHMunicipalityCode;
+      NFGeometer : MANDATORY TEXT*255;
+    END Geometer;
 
     /** Grundstuecke (Liegenschaften und SelbstRechte) aus der amtlichen Vermessung.
      */
@@ -126,9 +149,18 @@ VERSION "2018-01-26"  =
     /** Manuell erfasste spannnungsbehaftete Gebiete. Die spannungsarmen Gebiete liegen als XTF vor und entsprechen dem Inversen.
      */
     CLASS Spannungsbehaftetes_Gebiet =
-      Bemerkungen : MTEXT*1024;
+      Bemerkung : MTEXT*1024;
       Perimeter : MANDATORY GeometryCHLV95_V1.SurfaceWithOverlaps2mm;
     END Spannungsbehaftetes_Gebiet;
+
+    /** Toleranzstufen aus amtlicher Vermessung.
+     * Nach Vergleich mit Richtplan, passen die TS2-Perimeter "besser" und Queries werden einfacher ("ausserhalb TS2").
+     */
+    CLASS Toleranzstufen =
+      Typ : MANDATORY TEXT*20;
+      Geometrie : MANDATORY GeometryCHLV95_V1.MultiSurface;
+      bfs_nr : MANDATORY CHAdminCodes_V1.CHMunicipalityCode;
+    END Toleranzstufen;
 
   END Grundlagen;
 
