@@ -10,21 +10,24 @@ VERSION "2018-01-26"  =
    */
   TOPIC Berechnungen =
 
-    /** Gemeinde mit einem unterhaltenen / finanzierten HFP3-Netz.
-     */
-    CLASS Gemeinde_HFP3_unterhalten =
-      Name : TEXT*20;
-      BFS_Nr : MANDATORY CHAdminCodes_V1.CHMunicipalityCode;
-      Geometrie : MANDATORY GeometryCHLV95_V1.SurfaceWithOverlaps2mm;
-    END Gemeinde_HFP3_unterhalten;
-
     /** Gemeinden mit einem LFP3-Netz, das mehrheitlich keine Höhen hat.
      */
     CLASS Gemeinde_LFP3_ohne_Hoehe =
       Name : MANDATORY TEXT*255;
       BFS_Nr : MANDATORY CHAdminCodes_V1.CHMunicipalityCode;
-      Geometrie : MANDATORY GeometryCHLV95_V1.SurfaceWithOverlaps2mm;
+      Geometrie : MANDATORY GeometryCHLV95_V1.MultiSurface;
+      NFGeometer : MANDATORY TEXT*255;
     END Gemeinde_LFP3_ohne_Hoehe;
+
+    /** Gemeinde mit  HFP3-Netz.
+     */
+    CLASS Gemeinde_mit_HFP3 =
+      Name : TEXT*255;
+      BFS_Nr : MANDATORY CHAdminCodes_V1.CHMunicipalityCode;
+      Geometrie : MANDATORY GeometryCHLV95_V1.MultiSurface;
+      NFGeometer : MANDATORY TEXT*255;
+      Finanzierung_gesichert : BOOLEAN;
+    END Gemeinde_mit_HFP3;
 
     /** HFP3, die unterhalten werden resp. wo die Finanzierung gesichert ist.
      */
@@ -35,7 +38,7 @@ VERSION "2018-01-26"  =
       BFS_Nr : MANDATORY CHAdminCodes_V1.CHMunicipalityCode;
     END HFP3_unterhalten;
 
-    /** Zu löschende Hochzielpunkte. Im FPDS sind sie als "nicht_begehbar" attribuiert. Ausgenommen sind die beiden Pyramiden und allfällige TSP.
+    /** Zu löschende Hochzielpunkte. Im FPDS sind sie als "nicht_begehbar" attribuiert. Ausgenommen sind die beiden Pyramiden und allfällige TSP und LFP1.
      */
     CLASS Hochzielpunkte =
       Nummer : MANDATORY TEXT*50;
@@ -48,6 +51,16 @@ VERSION "2018-01-26"  =
       zustaendig : TEXT*255;
       NFGeometer : TEXT*255;
     END Hochzielpunkte;
+
+    /** LFP2, die zu LFP3 degradiert werden. Ohne Pyramiden und Hochzielpunkte. Pyramiden werden beibehalten und Hochzielpunkte werden gelöscht.
+     */
+    CLASS LFP2_degradieren =
+      Nummer : MANDATORY TEXT*20;
+      Bemerkung : TEXT*1024;
+      Geometrie : MANDATORY GeometryCHLV95_V1.Coord2;
+      NFGeometer : MANDATORY TEXT*255;
+      BFS_Nr : MANDATORY CHAdminCodes_V1.CHMunicipalityCode;
+    END LFP2_degradieren;
 
     /** LFP3, die auf Grenzpunkten liegen und zu löschen sind.
      */
@@ -64,6 +77,12 @@ VERSION "2018-01-26"  =
       Name : MANDATORY TEXT*20;
       Geometrie : MANDATORY GeometryCHLV95_V1.Coord2;
       Herkunft : TEXT*255;
+      BFS_Nr : MANDATORY CHAdminCodes_V1.CHMunicipalityCode;
+      NFGeometer : MANDATORY TEXT*255;
+      LFP3 : MANDATORY BOOLEAN;
+      upgrade : MANDATORY BOOLEAN;
+      Bemerkung : TEXT*1024;
+      Hoehe : 0.000 .. 5000.000;
     END TSP_ungleich_LFP2;
 
   END Berechnungen;
@@ -136,6 +155,10 @@ VERSION "2018-01-26"  =
       BFS_Nr : MANDATORY CHAdminCodes_V1.CHMunicipalityCode;
     END Hoehenfixpunkt;
 
+    CLASS Kantonsgrenze =
+      Geometrie : MANDATORY GeometryCHLV95_V1.MultiSurface;
+    END Kantonsgrenze;
+
     /** LFP1-3 aus der amtlichen Vermessung.
      */
     CLASS Lagefixpunkt =
@@ -163,5 +186,30 @@ VERSION "2018-01-26"  =
     END Toleranzstufen;
 
   END Grundlagen;
+
+  TOPIC Resultate =
+
+    CLASS HFP =
+      Nummer : TEXT*20;
+      Kategorie : MANDATORY 1 .. 3;
+      Hoehe : MANDATORY 0.000 .. 5000.000;
+      Bemerkung : TEXT*1024;
+      Geometrie : MANDATORY GeometryCHLV95_V1.Coord2;
+      BFS_Nr : MANDATORY CHAdminCodes_V1.CHMunicipalityCode;
+    END HFP;
+
+    CLASS LFP =
+      Nummer : MANDATORY TEXT*20;
+      Kategorie : MANDATORY 0 .. 2;
+      Hoehe : 0.000 .. 5000.000;
+      Geometrie : MANDATORY GeometryCHLV95_V1.Coord2;
+      BFS_Nr : MANDATORY CHAdminCodes_V1.CHMunicipalityCode;
+      Ordnung : TEXT*255;
+      Signatur : TEXT*255;
+      Fineltra : TEXT*255;
+      Protokoll : INTERLIS.URI;
+    END LFP;
+
+  END Resultate;
 
 END SO_AV_Fixpunktkonzept_2017_20180203.

@@ -19,4 +19,7 @@ WHERE
   AND fpds.fineltra = 'kein_TSP'
   AND fpds.nummer != '11072357' -- Röti
   AND fpds.nummer != '10874457' -- Hohe Winde
+  AND fpds.ordnung NOT LIKE 'LFP1%' -- keine LFP1 ausschliessen
 ;
+
+

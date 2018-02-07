@@ -14,6 +14,7 @@ task createSchema_Fixpunktkonzept(type: Ili2pgImportSchema) {
     models = "SO_AV_Fixpunktkonzept_2017_20180203"
     modeldir = "http://models.geo.admin.ch;../ili/" 
     dbschema = dbSchema
+    //createBasketCol = true
     nameByTopic = true
     createFk = true
     createFkIdx = true

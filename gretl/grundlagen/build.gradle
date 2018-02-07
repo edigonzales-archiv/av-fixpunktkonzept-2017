@@ -11,7 +11,8 @@ task copy_Grundlagedaten(type: Db2Db) {
             new TransferSet("sql/copyGrundstuecke.sql", dbSchema + ".grundlagen_grundstuecke", true),
             new TransferSet("sql/copyLagefixpunkte.sql", dbSchema + ".grundlagen_lagefixpunkt", true),
             new TransferSet("sql/copyHoehenfixpunkte.sql", dbSchema + ".grundlagen_hoehenfixpunkt", true),
-            new TransferSet("sql/copyNFGeometer.sql", dbSchema + ".grundlagen_geometer", true)
+            new TransferSet("sql/copyNFGeometer.sql", dbSchema + ".grundlagen_geometer", true),
+            new TransferSet("sql/copyKantonsgrenze.sql", dbSchema + ".grundlagen_kantonsgrenze", true)
     ]
 }
 

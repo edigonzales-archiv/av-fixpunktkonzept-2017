@@ -1,3 +1,3 @@
-include 'initialisierung', 'grundlagen', 'berechnungen'
+include 'initialisierung', 'grundlagen', 'berechnungen', 'resultate', 'export'
 rootProject.name = 'av-fixpunktkonzept-2017'
 
