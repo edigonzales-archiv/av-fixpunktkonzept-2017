@@ -2,13 +2,31 @@ import ch.so.agi.gretl.tasks.*
 import ch.so.agi.gretl.api.*
 
 
-task exportData_Fixpunktkonzept(type: Ili2pgExport) {
+task exportXTF_Fixpunktkonzept(type: Ili2pgExport) {
     description = "Exportiert sämtliche Daten in eine INTERLIS-Transferdatei."
     database = [targetDbUrl, targetDbUser, targetDbPass]
     models = "SO_AV_Fixpunktkonzept_2017_20180203"
     modeldir = "http://models.geo.admin.ch;../ili/" 
     dbschema = dbSchema
     disableValidation = true
-    topics = 'Resultate'
+    //topics = 'Resultate'
     dataFile = "av-fixpunktkonzept-2017.xtf"
+}
+
+task exportCSV_LFP3_auf_GP(type: CsvExport) {
+    description = "Exportiert die zu löschenden LFP3 (auf GP) in eine CSV-Datei (ohne Geometrie)."    
+    database = [targetDbUrl, targetDbUser, targetDbPass]
+	schemaName = dbSchema
+	tableName = "berechnungen_lfp3_auf_gp"
+	firstLineIsHeader=true
+	//attributes = [ "t_id","nummer", "bfs_nr"]
+    dataFile = "lfp3_auf_gp.csv"
+}
+
+task exportSHP_LFP3_auf_GP(type: ShpExport){
+    description = "Exportiert die zu löschenden LFP3 (auf GP) in eine Shapedatei."    
+    database = [targetDbUrl, targetDbUser, targetDbPass]
+	schemaName = dbSchema
+	tableName = "berechnungen_lfp3_auf_gp"
+    dataFile = "lfp3_auf_gp.shp"
 }
