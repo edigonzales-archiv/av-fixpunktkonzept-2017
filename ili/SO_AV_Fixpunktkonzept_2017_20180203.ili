@@ -29,15 +29,6 @@ VERSION "2018-01-26"  =
       Finanzierung_gesichert : BOOLEAN;
     END Gemeinde_mit_HFP3;
 
-    /** HFP3, die unterhalten werden resp. wo die Finanzierung gesichert ist.
-     */
-    CLASS HFP3_unterhalten =
-      Nummer : TEXT*20;
-      Lage : MANDATORY GeometryCHLV95_V1.Coord2;
-      Hoehe : MANDATORY 0.000 .. 5000.000;
-      BFS_Nr : MANDATORY CHAdminCodes_V1.CHMunicipalityCode;
-    END HFP3_unterhalten;
-
     /** Zu löschende Hochzielpunkte. Im FPDS sind sie als "nicht_begehbar" attribuiert. Ausgenommen sind die beiden Pyramiden und allfällige TSP und LFP1.
      */
     CLASS Hochzielpunkte =

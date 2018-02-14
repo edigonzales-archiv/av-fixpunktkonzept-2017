@@ -21,7 +21,8 @@ WHERE
   OR ordnung LIKE 'LFP1%'
 
 UNION ALL
-  
+
+-- LPF3-TSP, die wir zu LFP2 upgraden (waren früher alles LFP2 und sind in LV95 bestimmt worden)
 SELECT
   lfp.aname AS nummer,
   2 AS kategorie,
@@ -38,4 +39,19 @@ FROM
   ON ST_Intersects(gemeinde.geometrie, lfp.geometrie)
 WHERE
   lfp.upgrade = true
+
+UNION ALL
+
+SELECT
+  '11072357' AS nummer,
+  2 AS kategorie,
+  1399.330 AS hoehe,
+  ST_PointFromText('POINT(2606757.520 1234122.210)', 2056) AS geometrie,
+  2522 AS bfs_nr,
+  'LFP2.Ordnung4' AS ordnung,
+  'Pyramide_Pfeiler' AS signatur,
+  'kein_TSP' AS fineltra,
+   'https://data.geo.admin.ch/ch.swisstopo.fixpunkte-lfp1/protokolle/LV03AV/1107/CH0300001107_11072357.pdf' AS protokoll
+
+-- Hohe Winde ist LFP1.Ordnung3
 ;
