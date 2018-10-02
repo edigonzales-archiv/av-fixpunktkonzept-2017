@@ -2,7 +2,10 @@ SELECT
   nummer,
   geometrie,
   bfs_nr,
-  nfgeometer
+  nfgeometer,
+  ST_X(geometrie) AS easting,
+  ST_Y(geometrie) AS northing,
+  ST_Z(geometrie) AS height
 FROM
 (
   SELECT

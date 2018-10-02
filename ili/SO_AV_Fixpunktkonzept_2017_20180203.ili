@@ -60,6 +60,15 @@ VERSION "2018-01-26"  =
       BFS_Nr : MANDATORY CHAdminCodes_V1.CHMunicipalityCode;
       Geometrie : MANDATORY GeometryCHLV95_V1.Coord2;
       NFGeometer : TEXT*255;
+      /** Y-Koordinate (Easting) als Zahl.
+       */
+      easting : MANDATORY 2000000.000 .. 3000000.000;
+      /** X-Koordinaten (Northing) als Zahl.
+       */
+      northing : MANDATORY 1000000.000 .. 2000000.000;
+      /** Höhe als Zahl.
+       */
+      height : 100.000 .. 1600.000;
     END LFP3_auf_GP;
 
     /** TSP, die keine LFP2 resp. LFP1 oder LV95-Punkte sind.
